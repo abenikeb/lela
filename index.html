@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lela — Fan App Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#170B0F;
+    --surface:#241019;
+    --surface-2:#341621;
+    --cream:#F7EEE4;
+    --cream-dim:#C7B2A8;
+    --gold:#ECB99F;
+    --berry:#8C3350;
+    --line: rgba(247,238,228,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:transparent;font-family:'Work Sans',sans-serif;color:var(--cream);}
+  .app{display:flex;flex-direction:column;align-items:center;gap:16px;padding:24px 8px;}
+  .switcher{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:420px;opacity:.75;}
+  .switcher .label{width:100%;text-align:center;font-size:10.5px;color:var(--cream-dim);font-family:'Space Mono';letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+  .switcher button{
+    background:var(--surface);border:1px solid var(--line);color:var(--cream-dim);
+    padding:6px 11px;border-radius:999px;font-family:'Work Sans';font-size:11.5px;font-weight:600;
+    cursor:pointer;transition:.15s;
+  }
+  .switcher button.active{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+
+  .phone{
+    width:380px;max-width:92vw;height:760px;
+    background:
+      radial-gradient(circle at 12% -8%, rgba(236,185,159,0.20), transparent 38%),
+      radial-gradient(circle at 108% 18%, rgba(140,51,80,0.40), transparent 46%),
+      radial-gradient(circle at 40% 128%, rgba(140,51,80,0.30), transparent 55%),
+      linear-gradient(180deg, #1E1015 0%, #170B0F 42%, #110709 100%);
+    border-radius:38px;border:8px solid #0B0808;position:relative;overflow:hidden;
+    box-shadow:0 30px 60px rgba(0,0,0,0.55);
+  }
+  .phone::after{
+    content:'';position:absolute;inset:0;pointer-events:none;z-index:70;opacity:0.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:22px;background:#0B0808;border-radius:0 0 14px 14px;z-index:75;}
+  .screens{position:absolute;inset:0;overflow:hidden;}
+  .screen{position:absolute;inset:0;overflow-y:auto;padding-bottom:78px;}
+  .screen::-webkit-scrollbar{display:none;}
+
+  .eyebrow{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+  h1,h2,h3{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.01em;margin:0;text-transform:uppercase;}
+
+  button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;padding:0;}
+  button:active{transform:scale(0.97);}
+
+  .topbar{display:flex;align-items:center;gap:10px;padding:34px 18px 10px;}
+  .topbar .logo{font-family:'Anton';font-size:20px;letter-spacing:.03em;}
+  .topbar .logo span{color:var(--gold);}
+  .topbar .title{font-family:'Anton';font-size:17px;letter-spacing:.02em;}
+  .topbar .spacer{margin-left:auto;}
+  .icon-btn{width:34px;height:34px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:15px;transition:.15s;}
+  .icon-btn:hover{background:var(--surface-2);}
+  .back-btn{width:34px;height:34px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:16px;}
+
+  .hero-poster{margin:10px 18px 4px;border-radius:18px;overflow:hidden;position:relative;height:230px;
+    background:linear-gradient(155deg,#3A1522,#170B0F 70%);cursor:pointer;width:calc(100% - 36px);text-align:left;}
+  .hero-poster .tag{position:absolute;top:14px;left:14px;background:var(--berry);padding:4px 10px;border-radius:999px;font-family:'Space Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
+  .hero-poster .fill{position:absolute;inset:0;background:
+      radial-gradient(circle at 75% 20%, rgba(236,185,159,0.35), transparent 55%),
+      linear-gradient(0deg, rgba(20,16,16,0.97) 5%, rgba(20,16,16,0.15) 65%);}
+  .hero-poster .content{position:absolute;left:16px;right:16px;bottom:14px;}
+  .hero-poster h2{font-size:27px;line-height:1;}
+  .hero-poster .meta{font-size:12.5px;color:var(--cream-dim);margin-top:6px;}
+  .hero-cta{margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--ink);
+    font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;}
+
+  .section{padding:20px 18px 4px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
+  .section-head h3{font-size:16px;}
+  .see-all{font-size:11.5px;color:var(--gold);font-family:'Space Mono';text-transform:uppercase;letter-spacing:.06em;background:none;}
+
+  .artist-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:4px;}
+  .artist-chip{flex:0 0 auto;width:76px;text-align:center;}
+  .artist-avatar{width:64px;height:64px;border-radius:50%;background:var(--surface-2);border:2px solid var(--gold);margin:0 auto 8px;
+    display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:20px;color:var(--gold);}
+  .artist-chip .name{font-size:11px;color:var(--cream-dim);}
+
+  .event-card{display:flex;align-items:stretch;background:var(--surface);border-radius:14px;margin-bottom:14px;border:1px solid var(--line);width:100%;text-align:left;overflow:hidden;position:relative;}
+  .event-thumb{width:56px;height:56px;border-radius:10px;flex:0 0 auto;background-size:cover;background-position:center;background-color:var(--surface-2);}
+  .event-info{min-width:0;}
+  .event-info h4{font-family:'Work Sans';font-weight:700;font-size:14px;margin:0 0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .event-info .sub{font-size:11.5px;color:var(--cream-dim);}
+  .event-info .artist-tag{font-size:10.5px;color:var(--gold);font-family:'Space Mono';margin-top:3px;}
+  .event-price{margin-left:auto;text-align:right;font-family:'Space Mono';font-size:13px;color:var(--gold);align-self:center;}
+
+  .category-label{display:flex;align-items:center;gap:8px;font-family:'Space Mono';font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-dim);margin:2px 0 10px;}
+  .category-label .count{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--gold);}
+
+  /* Exclusive Experiences */
+  .exclusive-card{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(236,185,159,0.35);
+    background:linear-gradient(160deg,var(--surface-2),var(--ink));width:calc(100% - 2px);text-align:left;display:block;}
+  .exclusive-media{height:130px;position:relative;background-size:cover;background-position:center;background-color:#241019;}
+  .exclusive-media .fill{position:absolute;inset:0;background:
+      linear-gradient(0deg, rgba(20,16,16,0.5) 0%, transparent 55%),
+      linear-gradient(160deg, rgba(140,51,80,0.32), rgba(23,11,15,0.2));}
+  .exclusive-card .badge{position:absolute;top:12px;left:12px;background:linear-gradient(120deg,var(--gold),#C98A68);color:var(--ink);
+    font-family:'Space Mono';font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;padding:4px 10px;border-radius:999px;font-weight:700;}
+  .exclusive-body{padding:14px 16px 16px;}
+  .exclusive-body h4{font-family:'Anton';font-size:17px;margin:0 0 4px;letter-spacing:.01em;}
+  .exclusive-body .host{font-size:11.5px;color:var(--cream-dim);margin-bottom:8px;}
+  .exclusive-meta-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+  .scarcity{font-size:11px;color:var(--gold);font-family:'Space Mono';}
+  .exclusive-price{font-family:'Space Mono';font-weight:700;font-size:14.5px;}
+
+  .cover{height:150px;position:relative;background-size:cover;background-position:center;background-color:#241019;}
+  .cover .fill{position:absolute;inset:0;background:
+      linear-gradient(0deg,var(--ink) 8%, transparent 70%),
+      linear-gradient(160deg, rgba(140,51,80,0.34), rgba(23,11,15,0.22));}
+  .profile-head{padding:0 18px;margin-top:-42px;position:relative;display:flex;align-items:flex-end;gap:14px;}
+  .profile-avatar{width:84px;height:84px;border-radius:50%;background:var(--surface-2);border:4px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:28px;color:var(--gold);}
+  .profile-head h2{font-size:22px;}
+  .profile-head .role{font-size:12px;color:var(--cream-dim);font-family:'Space Mono';}
+  .follow-btn{margin-left:auto;background:var(--gold);color:var(--ink);font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:9px;align-self:center;transition:.15s;}
+  .follow-btn.on{background:var(--surface-2);color:var(--cream);border:1px solid var(--gold);}
+  .stat-row{display:flex;gap:10px;padding:18px 18px 6px;}
+  .stat{flex:1;background:var(--surface);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--line);}
+  .stat b{font-family:'Anton';display:block;font-size:18px;color:var(--gold);}
+  .stat span{font-size:10.5px;color:var(--cream-dim);text-transform:uppercase;letter-spacing:.04em;}
+  .bio{padding:16px 18px;font-size:13.5px;line-height:1.6;color:var(--cream-dim);}
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 10px;}
+  .chip{background:var(--surface);border:1px solid var(--line);padding:6px 12px;border-radius:999px;font-size:11.5px;}
+  .chip.active{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+
+  .event-hero{height:210px;position:relative;background-size:cover;background-position:center;background-color:#241019;}
+  .event-hero .fill{position:absolute;inset:0;background:
+      linear-gradient(0deg,var(--ink) 12%, rgba(20,16,16,0.12) 70%),
+      linear-gradient(160deg, rgba(140,51,80,0.34), rgba(23,11,15,0.22));}
+  .event-hero .content{position:absolute;left:18px;right:18px;bottom:16px;}
+  .event-hero h2{font-size:24px;}
+  .event-hero .type-tag{display:inline-block;background:var(--berry);font-family:'Space Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:8px;}
+  .detail-row{display:flex;gap:18px;padding:14px 18px;border-bottom:1px solid var(--line);font-size:13px;}
+  .detail-row div span{display:block;color:var(--cream-dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+
+  .about-text{padding:0 18px 4px;font-size:13.5px;line-height:1.65;color:var(--cream-dim);}
+
+  .host-row{display:flex;align-items:center;gap:12px;padding:16px 18px 4px;}
+  .host-avatar{width:44px;height:44px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-family:'Anton';color:var(--gold);flex:0 0 auto;}
+  .host-row .host-role{font-size:11.5px;color:var(--cream-dim);}
+  .host-row .host-name{font-weight:700;font-size:13.5px;}
+  .host-row .arrow-link{margin-left:auto;color:var(--gold);font-family:'Space Mono';font-size:11px;text-transform:uppercase;}
+
+  .include-list{padding:4px 18px 8px;}
+  .include-item{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:13px;border-bottom:1px solid var(--line);}
+  .include-item:last-child{border-bottom:none;}
+  .include-check{color:var(--gold);font-weight:700;}
+
+  .scarcity-bar-wrap{margin:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .scarcity-bar{height:6px;border-radius:999px;background:var(--surface-2);margin-top:8px;overflow:hidden;}
+  .scarcity-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--berry));}
+  .scarcity-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--cream-dim);}
+
+  .tier-card{margin:10px 18px;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;background:var(--surface);width:calc(100% - 36px);text-align:left;}
+  .tier-card.selected{border-color:var(--gold);background:var(--surface-2);}
+  .tier-card.vip{border-color:rgba(140,51,80,0.5);}
+  .tier-card.vip.selected{border-color:var(--berry);}
+  .tier-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--cream-dim);flex:0 0 auto;}
+  .tier-card.selected .tier-radio{border-color:var(--gold);background:var(--gold);}
+  .tier-card.vip.selected .tier-radio{border-color:var(--berry);background:var(--berry);}
+  .tier-name{font-weight:700;font-size:13.5px;}
+  .tier-name .vip-badge{color:var(--berry);font-family:'Space Mono';font-size:10px;margin-left:6px;}
+  .tier-sub{font-size:11.5px;color:var(--cream-dim);}
+  .tier-price{margin-left:auto;font-family:'Space Mono';font-weight:700;font-size:14.5px;}
+
+  .custom-input-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .custom-input{width:64px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--cream);font-family:'Space Mono';font-size:13px;text-align:center;}
+  .custom-note{font-size:11px;color:var(--cream-dim);margin-top:8px;line-height:1.45;}
+
+  .qty-row{display:flex;align-items:center;justify-content:space-between;margin:16px 18px;padding:12px 16px;background:var(--surface);border-radius:12px;border:1px solid var(--line);}
+  .qty-ctrl{display:flex;align-items:center;gap:14px;}
+  .qty-btn{width:28px;height:28px;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-weight:700;}
+  .qty-num{font-family:'Space Mono';font-weight:700;min-width:14px;text-align:center;display:inline-block;}
+
+  .bottom-cta{position:absolute;left:0;right:0;bottom:64px;padding:14px 18px;background:linear-gradient(0deg,var(--ink) 60%, transparent);}
+  .cta-btn{display:flex;align-items:center;justify-content:space-between;background:var(--gold);color:var(--ink);
+    padding:14px 18px;border-radius:12px;font-weight:700;font-size:14px;width:100%;}
+  .cta-btn.dark{background:var(--surface-2);color:var(--cream);border:1px solid var(--line);}
+  .cta-btn:disabled{opacity:.55;}
+
+  .pay-card{margin:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;width:calc(100% - 36px);text-align:left;}
+  .pay-card.selected{border-color:var(--gold);}
+  .pay-logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(160deg,#ECB99F,#C98A68);display:flex;align-items:center;justify-content:center;font-family:'Anton';color:var(--ink);font-size:13px;flex:0 0 auto;}
+  .summary-row{display:flex;justify-content:space-between;padding:10px 18px;font-size:13px;color:var(--cream-dim);}
+  .summary-row.total{color:var(--cream);font-weight:700;font-size:15px;border-top:1px solid var(--line);margin-top:6px;padding-top:14px;}
+  .summary-row span:last-child{font-family:'Space Mono';color:var(--cream);}
+
+  .recipient-card{margin:0 18px 14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;}
+  .recipient-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .recipient-top .rt-title{font-weight:700;font-size:13.5px;}
+  .recipient-top .rt-sub{font-size:11.5px;color:var(--cream-dim);margin-top:2px;}
+  .switch{width:44px;height:26px;border-radius:999px;background:var(--surface-2);position:relative;flex:0 0 auto;border:1px solid var(--line);transition:.2s;}
+  .switch .knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--cream-dim);transition:.2s;}
+  .switch.on{background:var(--gold);border-color:var(--gold);}
+  .switch.on .knob{left:20px;background:var(--ink);}
+  .recipient-phone-field{margin-top:12px;}
+  .recipient-phone-field label{display:block;font-size:11px;color:var(--cream-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;font-family:'Space Mono';}
+  .recipient-phone-field input{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--cream);font-family:'Space Mono';font-size:13px;outline:none;}
+  .recipient-phone-field input:focus{border-color:var(--gold);}
+  .recipient-hint{font-size:11px;color:var(--cream-dim);margin-top:8px;line-height:1.45;}
+
+  .ticket-wrap{padding:24px 18px;}
+  .stub{position:relative;background:var(--surface);border-radius:20px;overflow:hidden;border:1px solid var(--line);}
+  .stub-top{padding:20px 18px 16px;}
+  .stub-top .ev{font-family:'Anton';font-size:19px;}
+  .stub-top .sub{font-size:12px;color:var(--cream-dim);margin-top:4px;}
+  .perf{position:relative;height:0;border-top:2px dashed rgba(247,238,228,0.18);margin:0 -1px;}
+  .perf::before,.perf::after{content:'';position:absolute;top:-12px;width:24px;height:24px;border-radius:50%;background:var(--ink);}
+  .perf::before{left:-12px;} .perf::after{right:-12px;}
+  .stub-bottom{padding:18px;display:flex;gap:16px;align-items:center;}
+  .qr{width:88px;height:88px;border-radius:10px;background:
+      repeating-linear-gradient(90deg, var(--ink) 0 6px, var(--cream) 6px 12px),
+      repeating-linear-gradient(0deg, transparent 0 6px, rgba(0,0,0,0.4) 6px 12px);
+      background-blend-mode:multiply;background-color:var(--cream);flex:0 0 auto;}
+  .stub-meta .row{font-size:11.5px;color:var(--cream-dim);margin-bottom:5px;}
+  .stub-meta .row b{color:var(--cream);font-family:'Space Mono';}
+  .vip-flag{display:inline-block;background:var(--berry);font-family:'Space Mono';font-size:10px;letter-spacing:.06em;
+    padding:3px 8px;border-radius:6px;text-transform:uppercase;margin-top:6px;}
+
+  .mini-stub{display:flex;background:var(--surface);border-radius:12px;margin:0 18px 12px;border:1px solid var(--line);overflow:hidden;width:calc(100% - 36px);text-align:left;align-items:center;}
+  .mini-stub .side{width:8px;align-self:stretch;background:var(--gold);}
+  .mini-stub.past .side{background:var(--cream-dim);opacity:.4;}
+  .mini-stub-body{padding:12px 14px;flex:1;}
+  .mini-stub-body h4{font-family:'Work Sans';font-weight:700;font-size:13.5px;margin:0 0 3px;}
+  .mini-stub-body .sub{font-size:11.5px;color:var(--cream-dim);}
+  .status-pill{font-family:'Space Mono';font-size:9.5px;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:rgba(236,185,159,0.16);color:var(--gold);align-self:center;margin-right:12px;}
+  .mini-stub.past .status-pill{background:rgba(255,255,255,0.06);color:var(--cream-dim);}
+
+  .search-box{margin:16px 18px 6px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;}
+  .search-box input{background:none;border:none;color:var(--cream);font-size:13.5px;flex:1;outline:none;}
+  .search-box input::placeholder{color:var(--cream-dim);}
+  .filter-row{display:flex;gap:8px;padding:10px 18px 4px;flex-wrap:wrap;}
+
+  .menu-item{display:flex;align-items:center;gap:14px;width:calc(100% - 36px);margin:0 18px 10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left;font-size:13.5px;font-weight:600;}
+  .menu-item .arrow{margin-left:auto;color:var(--cream-dim);}
+  .menu-item.danger{color:var(--berry);}
+
+  .tabbar{position:absolute;left:0;right:0;bottom:0;height:64px;background:var(--surface);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-around;z-index:40;}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;color:var(--cream-dim);flex:1;padding:8px 0;}
+  .tab.on{color:var(--gold);}
+  .tab .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  .toast{position:absolute;left:18px;right:18px;bottom:78px;background:var(--cream);color:var(--ink);
+    padding:11px 16px;border-radius:10px;font-size:12.5px;font-weight:600;text-align:center;
+    opacity:0;transform:translateY(8px);pointer-events:none;transition:.25s;z-index:60;}
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  .note{max-width:380px;font-size:12px;color:var(--cream-dim);text-align:center;line-height:1.5;padding:0 12px;}
+
+  /* ---- Discover signature system: feature ticket carousel, tear dividers, backstage passes ---- */
+  .feature-ticket{margin:14px 18px 4px;border-radius:20px;overflow:hidden;position:relative;background:var(--surface);}
+  .feature-ticket-viewport{overflow:hidden;position:relative;}
+  .feature-ticket-track{display:flex;transition:transform .55s cubic-bezier(.65,0,.35,1);}
+  .feature-ticket-slide{flex:0 0 100%;width:100%;height:200px;position:relative;cursor:pointer;
+    background-size:cover;background-position:center;background-color:#241019;}
+  .feature-ticket-slide .vignette{position:absolute;inset:0;background:
+      linear-gradient(0deg, rgba(20,16,16,0.92) 4%, rgba(20,16,16,0.08) 55%),
+      linear-gradient(160deg, rgba(140,51,80,0.38), rgba(23,11,15,0.28));}
+  .feature-ticket-slide .tag{position:absolute;top:14px;left:14px;background:var(--berry);padding:4px 10px;border-radius:999px;font-family:'Space Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;z-index:2;}
+  .feature-ticket-slide .stamp{position:absolute;top:12px;right:14px;border:2px solid var(--gold);color:var(--gold);
+    font-family:'Anton';font-size:11px;letter-spacing:.03em;padding:4px 7px;border-radius:8px;transform:rotate(7deg);z-index:2;}
+  .feature-ticket-slide .ftitle{position:absolute;left:16px;right:16px;bottom:14px;z-index:2;}
+  .feature-ticket-slide h2{font-size:26px;line-height:0.98;}
+  .feature-ticket-slide .fmeta{font-size:11.5px;color:var(--cream-dim);margin-top:5px;}
+  .feature-ticket-tear{position:relative;height:0;border-top:2px dashed rgba(23,11,15,0.55);}
+  .feature-ticket-tear::before,.feature-ticket-tear::after{content:'';position:absolute;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--ink);}
+  .feature-ticket-tear::before{left:-9px;}
+  .feature-ticket-tear::after{right:-9px;}
+  .feature-ticket-stub{display:flex;align-items:center;gap:14px;padding:14px 16px;}
+  .feature-ticket-stub .info{flex:1;min-width:0;}
+  .feature-ticket-stub .info .venue-line{font-size:12px;color:var(--cream-dim);}
+  .feature-ticket-stub .info .venue-line b{color:var(--cream);font-weight:600;}
+  .feature-ticket-stub .cta{background:var(--gold);color:var(--ink);font-weight:700;font-size:13px;padding:10px 16px;border-radius:10px;white-space:nowrap;flex:0 0 auto;}
+  .hero-dots{display:flex;gap:6px;justify-content:center;padding:0 0 12px;}
+  .hero-dot{width:6px;height:6px;border-radius:999px;background:rgba(247,238,228,0.22);transition:.25s;}
+  .hero-dot.active{width:18px;background:var(--gold);}
+
+  .tear-divider{position:relative;height:0;border-top:2px dashed rgba(247,238,228,0.14);margin:28px 18px 0;}
+  .tear-divider::before,.tear-divider::after{content:'';position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;background:var(--ink);border:1px solid var(--line);}
+  .tear-divider::before{left:-8px;}
+  .tear-divider::after{right:-8px;}
+
+  .pass-row{display:flex;gap:16px;overflow-x:auto;padding:8px 4px 12px;}
+  .pass-chip{flex:0 0 auto;width:80px;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:16px 8px 10px;text-align:center;position:relative;}
+  .pass-chip:nth-child(odd){transform:rotate(-2deg);}
+  .pass-chip:nth-child(even){transform:rotate(1.5deg);}
+  .pass-chip .hole{width:9px;height:9px;border-radius:50%;background:var(--ink);border:2px solid var(--line);
+    position:absolute;top:6px;left:50%;transform:translateX(-50%);}
+  .pass-chip .pass-avatar{width:42px;height:42px;border-radius:50%;background-color:var(--surface-2);border:2px solid var(--gold);
+    background-size:cover;background-position:center;
+    margin:8px auto 8px;display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:15px;color:transparent;}
+  .pass-chip .pass-name{font-size:10px;font-family:'Space Mono';text-transform:uppercase;letter-spacing:.03em;color:var(--cream);}
+  .pass-chip .pass-role{font-size:8px;color:var(--gold);font-family:'Space Mono';text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+  .exclusive-card{position:relative;overflow:visible;}
+  .exclusive-card .invite-ribbon{position:absolute;top:0;right:20px;background:var(--gold);color:var(--ink);
+    font-family:'Space Mono';font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px 6px;
+    border-radius:0 0 7px 7px;font-weight:700;z-index:3;}
+
+  .ec-main{display:flex;gap:12px;align-items:center;padding:10px 12px;flex:1;min-width:0;}
+  .ec-divider{width:0;position:relative;flex:0 0 auto;border-left:2px dashed rgba(247,238,228,0.16);}
+  .ec-divider::before,.ec-divider::after{content:'';position:absolute;left:-7px;width:14px;height:14px;border-radius:50%;background:var(--ink);}
+  .ec-divider::before{top:-7px;}
+  .ec-divider::after{bottom:-7px;}
+  .ec-price{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 14px;gap:3px;flex:0 0 auto;}
+  .ec-price b{font-family:'Space Mono';font-size:12.5px;color:var(--gold);white-space:nowrap;}
+  .ec-price .go{font-size:13px;color:var(--cream-dim);}
+
+  /* Premium elevation: soft shadow + hairline top highlight on key surfaces */
+  .feature-ticket, .event-card, .exclusive-card, .tier-card, .pay-card, .pass-chip,
+  .stat, .mini-stub, .recipient-card, .menu-item, .stub, .pay-card{
+    box-shadow: 0 10px 26px rgba(0,0,0,0.32), inset 0 1px 0 rgba(247,238,228,0.05);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="switcher">
+    <div class="label">Quick jump (demo aid only — not part of the app)</div>
+    <div id="switcher-btns"></div>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screens" id="screens"></div>
+    <div class="toast" id="toast"></div>
+    <div class="tabbar" id="tabbar"></div>
+  </div>
+
+  <div class="note">Every button here is wired up: tap tiers to select them, +/- to change quantity, Follow to toggle, the "Buying for someone else" switch on checkout, and Pay to run the flow through to a ticket, plus the bottom tabs to switch sections.</div>
+</div>
+
+<script>
+// ---- Real photography, sourced from Pexels (free-to-use license) ----
+function pexels(id, w){
+  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
+}
+
+// ---- Event catalogue, categorized by type ----
+const eventsData = [
+  {
+    id:'millennium', type:'music', title:'Millennium Nights',
+    venue:'Millennium Hall', date:'Sat, Aug 2 · 7:00 PM', price:450,
+    artist:'Rophnan', img:2263436,
+    about:"A high-energy fusion night blending traditional Ethiopian rhythms with modern electronic production. Expect surprise guest performances and a full live band set."
+  },
+  {
+    id:'enkutatash', type:'music', title:'Enkutatash Concert',
+    venue:'Ghion Hotel', date:'Fri, Sep 11 · 7:00 PM', price:450,
+    artist:'Hamelmal', img:1105666,
+    about:"A New Year celebration concert bringing together some of the country's most loved vocalists for one night of music and dance."
+  },
+  {
+    id:'zela', type:'launch', title:'Album Launch: Zela',
+    venue:'Century Mall', date:'Mon, Sep 28 · 7:00 PM', price:200,
+    artist:'Mahder A.', img:6862354,
+    about:"Celebrate the release of Mahder A.'s new album with a full live performance of the tracklist, plus an acoustic encore session."
+  },
+  {
+    id:'yeqererta', type:'film', title:'Film Premiere: Yeqererta',
+    venue:'Ambassador Cinema', date:'Thu, Aug 20 · 6:30 PM', price:300,
+    artist:null, img:713149,
+    about:"The much-anticipated premiere screening of Yeqererta, followed by a live Q&A with the cast and director."
+  },
+  {
+    id:'artexpo', type:'general', title:'Addis Art & Design Expo',
+    venue:'Skylight Hotel', date:'Sat, Oct 3 · 10:00 AM', price:150,
+    artist:null, img:35298122,
+    about:"A weekend expo showcasing Addis Ababa's rising designers, artists, and makers, with pop-up shops and live demos."
+  },
+];
+
+// Anonymous performer photography for artist chips/avatars — not depictions of any real person
+const artistImages = {
+  'Rophnan': 14440540,
+  'Hamelmal': 7806499,
+  'Abush Z.': 18671362,
+  'Mahder A.': 16049396,
+};
+
+const categories = [
+  {key:'music', label:'Music Concerts'},
+  {key:'launch', label:'Album Launches'},
+  {key:'film', label:'Film Premieres'},
+  {key:'general', label:'General Events'},
+];
+
+function findEvent(id){ return eventsData.find(e=>e.id===id); }
+function defaultConcertContext(){ return Object.assign({kind:'concert'}, eventsData[0]); }
+
+// ---- Hero carousel: mixes event promos, the exclusive experience, and a sponsor ad ----
+const heroSlides = [
+  {kind:'event', id:'millennium', tagLabel:'This weekend', stampLabel:'AUG 02', img:2263435,
+   title:'Millennium Nights', metaLine:'Rophnan · Millennium Hall, Addis Ababa',
+   stubLine1:'Sat, Aug 2 · 7:00 PM', stubLine2:'From 450 ETB', ctaLabel:'Get tickets'},
+  {kind:'ad', tagLabel:'Sponsored', stampLabel:'NEW', img:12079714,
+   title:'Telebirr Pay Days', metaLine:'10% cashback on any ticket paid with Telebirr this month',
+   stubLine1:'Offer ends Aug 31', stubLine2:'No promo code needed', ctaLabel:'Learn more'},
+  {kind:'event', id:'zela', tagLabel:'Album drop', stampLabel:'SEP 28', img:164853,
+   title:'Album Launch: Zela', metaLine:'Mahder A. · Century Mall',
+   stubLine1:'Mon, Sep 28 · 7:00 PM', stubLine2:'From 200 ETB', ctaLabel:'Get tickets'},
+  {kind:'experience', tagLabel:'Exclusive', stampLabel:'RSVP', img:29616285,
+   title:'Chef\u2019s Table Dinner', metaLine:'Hosted by Chef Selam Getachew · The Wine Terrace',
+   stubLine1:'Fri, Aug 15 · 7:30 PM', stubLine2:'12 seats left', ctaLabel:'Reserve seat'},
+];
+
+function heroSlideClick(i){
+  const s = heroSlides[i];
+  if(s.kind==='event') openConcertById(s.id);
+  else if(s.kind==='experience') openExperience(experienceData);
+  else toast('Sponsored placement · Telebirr');
+}
+
+let heroTimer = null;
+function stopHeroCarousel(){ if(heroTimer){ clearInterval(heroTimer); heroTimer = null; } }
+function startHeroCarousel(){
+  stopHeroCarousel();
+  heroTimer = setInterval(()=>{
+    state.heroIndex = (state.heroIndex + 1) % heroSlides.length;
+    applyHeroSlide();
+  }, 4500);
+}
+function heroStubHtml(s){
+  return `
+    <div class="info">
+      <div class="venue-line">${s.stubLine1}</div>
+      <div class="venue-line"><b>${s.stubLine2}</b></div>
+    </div>
+    <div class="cta">${s.ctaLabel}</div>
+  `;
+}
+function applyHeroSlide(){
+  const track = document.getElementById('hero-track');
+  if(!track) return;
+  track.style.transform = `translateX(-${state.heroIndex * 100}%)`;
+  document.querySelectorAll('.hero-dot').forEach((d,i)=>d.classList.toggle('active', i===state.heroIndex));
+  const stub = document.getElementById('hero-stub');
+  if(stub) stub.innerHTML = heroStubHtml(heroSlides[state.heroIndex]);
+}
+function goHeroSlide(i){ state.heroIndex = i; applyHeroSlide(); startHeroCarousel(); }
+
+const state = {
+  tab: 'discover',
+  stack: ['discover'],
+  context: defaultConcertContext(),
+  selectedTier: 0,
+  qty: 2,
+  customQty: 10,
+  following: false,
+  filter: 'all',
+  buyForOther: false,
+  otherPhone: '',
+  heroIndex: 0,
+};
+
+const tiers = [
+  {name:'Standard', sub:'General floor access', price:450, vip:false},
+  {name:'VIP', badge:'2×', sub:'Front section + lounge access', price:900, vip:true},
+  {name:'VIP', badge:'4×', sub:'Backstage meet & greet', price:1800, vip:true},
+  {name:'Custom Quantity', sub:'Best for group bookings (9+ guests)', price:null, vip:false, custom:true},
+];
+
+const experienceData = {
+  title: 'Private Dinner: Chefs Table Experience',
+  host: 'Hosted by Chef Selam Getachew',
+  venue: 'The Wine Terrace, Bole',
+  date: 'Fri, Aug 15 · 7:30 PM',
+  price: 3500,
+  seatsTotal: 20,
+  seatsReserved: 8,
+  img: 29616285,
+  includes: [
+    'Five-course tasting menu',
+    'Wine pairing selection',
+    'Meet-the-chef introduction',
+    'Private terrace seating',
+    'Printed menu keepsake'
+  ]
+};
+
+const tabRoot = {discover:'discover', events:'events', tickets:'tickets', profile:'profile'};
+
+function push(screen){ state.stack.push(screen); render(); }
+function pop(){ if(state.stack.length>1) state.stack.pop(); render(); }
+function goTab(tab){ state.tab = tab; state.stack = [tabRoot[tab]]; render(); }
+function current(){ return state.stack[state.stack.length-1]; }
+
+function openConcert(payload){
+  state.context = Object.assign({kind:'concert'}, payload);
+  state.selectedTier = 0; state.qty = 2; state.customQty = 10;
+  push('event');
+}
+function openConcertById(id){ openConcert(findEvent(id)); }
+
+function openExperience(payload){
+  state.context = Object.assign({kind:'experience'}, payload);
+  state.qty = 1;
+  push('experience');
+}
+
+function submitCustomRequest(){ push('customRequest'); }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+function totalPrice(){
+  const c = state.context;
+  if(!c) return 0;
+  if(c.kind === 'experience'){ return c.price * state.qty; }
+  const tier = tiers[state.selectedTier];
+  if(tier.custom){ return tiers[0].price * state.customQty; }
+  return tier.price * state.qty;
+}
+
+function topbar({title, back, right}){
+  return `<div class="topbar">
+    ${back ? `<button class="back-btn" onclick="pop()">←</button>` : `<div class="logo">LE<span>L</span>A</div>`}
+    ${title ? `<div class="title">${title}</div>` : ''}
+    <div class="spacer"></div>
+    ${right || ''}
+  </div>`;
+}
+
+function eventCardHtml(e){
+  return `
+    <button class="event-card" onclick="openConcertById('${e.id}')">
+      <div class="ec-main">
+        <div class="event-thumb" style="background-image:url('${pexels(e.img,160)}')"></div>
+        <div class="event-info">
+          <h4>${e.title}</h4>
+          <div class="sub">${e.venue} · ${e.date.split('·')[0].trim()}</div>
+          ${e.artist ? `<div class="artist-tag">🎤 ${e.artist}</div>` : ''}
+        </div>
+      </div>
+      <div class="ec-divider"></div>
+      <div class="ec-price"><b>${e.price} ETB</b><span class="go">→</span></div>
+    </button>
+  `;
+}
+
+function screenDiscover(){
+  return `
+    ${topbar({right:`<button class="icon-btn" onclick="toast('No new notifications')">🔔</button>`})}
+
+    <div class="feature-ticket">
+      <div class="feature-ticket-viewport">
+        <div class="feature-ticket-track" id="hero-track" style="transform:translateX(-${state.heroIndex*100}%)">
+          ${heroSlides.map((s,i)=>`
+            <div class="feature-ticket-slide" style="background-image:url('${pexels(s.img,900)}')" onclick="heroSlideClick(${i})">
+              <div class="vignette"></div>
+              <div class="tag">${s.tagLabel}</div>
+              <div class="stamp">${s.stampLabel}</div>
+              <div class="ftitle">
+                <h2>${s.title}</h2>
+                <div class="fmeta">${s.metaLine}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="feature-ticket-tear"></div>
+      <div class="feature-ticket-stub" id="hero-stub">${heroStubHtml(heroSlides[state.heroIndex])}</div>
+      <div class="hero-dots">
+        ${heroSlides.map((_,i)=>`<button class="hero-dot ${i===state.heroIndex?'active':''}" onclick="goHeroSlide(${i})"></button>`).join('')}
+      </div>
+    </div>
+
+    <div class="tear-divider"></div>
+    <div class="section">
+      <div class="section-head"><h3>Upcoming events</h3><button class="see-all" onclick="goTab('events')">See all</button></div>
+      ${eventCardHtml(findEvent('enkutatash'))}
+      ${eventCardHtml(findEvent('yeqererta'))}
+      ${eventCardHtml(findEvent('zela'))}
+    </div>
+
+    <div class="tear-divider"></div>
+    <div class="section">
+      <div class="section-head"><h3>Artists on tour</h3><button class="see-all" onclick="toast('Full artist list coming soon')">See all</button></div>
+      <div class="pass-row">
+        ${Object.entries(artistImages).map(([name,imgId])=>`
+          <button class="pass-chip" onclick="push('artist')">
+            <div class="hole"></div>
+            <div class="pass-avatar" style="background-image:url('${pexels(imgId,120)}')"></div>
+            <div class="pass-name">${name}</div>
+            <div class="pass-role">Artist</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="tear-divider"></div>
+    <div class="section">
+      <div class="section-head"><h3>Exclusive Experiences</h3><button class="see-all" onclick="toast('More exclusive experiences coming soon')">See all</button></div>
+      <button class="exclusive-card" onclick="openExperience(experienceData)">
+        <div class="invite-ribbon">By invitation</div>
+        <div class="exclusive-media" style="background-image:url('${pexels(experienceData.img,600)}')"><div class="fill"></div></div>
+        <div class="exclusive-body">
+          <h4>${experienceData.title}</h4>
+          <div class="host">${experienceData.host}</div>
+          <div class="exclusive-meta-row">
+            <div class="scarcity">${experienceData.seatsTotal - experienceData.seatsReserved} seats left</div>
+            <div class="exclusive-price">${experienceData.price} ETB / seat</div>
+          </div>
+        </div>
+      </button>
+    </div>
+  `;
+}
+
+function screenEvents(){
+  const filters = [{key:'all',label:'All'}, ...categories, {key:'exclusive',label:'Exclusive'}];
+  const showCategories = state.filter==='all' ? categories : categories.filter(c=>c.key===state.filter);
+  const showExclusive = state.filter==='all' || state.filter==='exclusive';
+
+  const categoryBlocks = showCategories.map(cat=>{
+    const items = eventsData.filter(e=>e.type===cat.key);
+    if(!items.length) return '';
+    return `
+      <div class="section">
+        <div class="category-label">${cat.label} <span class="count">${items.length}</span></div>
+        ${items.map(eventCardHtml).join('')}
+      </div>
+    `;
+  }).join('');
+
+  const exclusiveBlock = showExclusive ? `
+    <div class="section">
+      <div class="category-label">Exclusive Experiences <span class="count">1</span></div>
+      <button class="exclusive-card" onclick="openExperience(experienceData)">
+        <div class="exclusive-media" style="background-image:url('${pexels(experienceData.img,600)}')"><div class="fill"></div><div class="badge">Exclusive</div></div>
+        <div class="exclusive-body">
+          <h4>${experienceData.title}</h4>
+          <div class="host">${experienceData.host}</div>
+          <div class="exclusive-meta-row">
+            <div class="scarcity">${experienceData.seatsTotal - experienceData.seatsReserved} seats left</div>
+            <div class="exclusive-price">${experienceData.price} ETB / seat</div>
+          </div>
+        </div>
+      </button>
+    </div>
+  ` : '';
+
+  return `
+    ${topbar({title:'Events'})}
+    <div class="search-box"><span>🔎</span><input placeholder="Search events" oninput="toast('Searching…')"></div>
+    <div class="filter-row">
+      ${filters.map(f=>`<button class="chip ${state.filter===f.key?'active':''}" onclick="state.filter='${f.key}';render()">${f.label}</button>`).join('')}
+    </div>
+    ${categoryBlocks}
+    ${exclusiveBlock}
+  `;
+}
+
+function screenArtist(){
+  return `
+    <div class="cover" style="background-image:url('${pexels(3661650,900)}')"><div class="fill"></div></div>
+    <div style="padding:0 18px;"><button class="back-btn" style="margin-top:-8px;" onclick="pop()">←</button></div>
+    <div class="profile-head">
+      <div class="profile-avatar" style="background-image:url('${pexels(artistImages['Rophnan'],200)}');background-size:cover;background-position:center;color:transparent;"></div>
+      <div><h2>Rophnan</h2><div class="role">Musician · Producer</div></div>
+      <button class="follow-btn ${state.following?'on':''}" onclick="state.following=!state.following;render();toast(state.following?'Following Rophnan':'Unfollowed')">${state.following?'Following':'Follow'}</button>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><b>4.8</b><span>Rating</span></div>
+      <div class="stat"><b>12</b><span>Events</span></div>
+      <div class="stat"><b>38K</b><span>Fans</span></div>
+    </div>
+    <div class="bio">Producer and performer blending traditional Ethiopian sounds with electronic music. Known for genre-defining live shows across Addis Ababa and abroad.</div>
+    <div class="chip-row">
+      <div class="chip">Electro-fusion</div><div class="chip">Live band</div><div class="chip">2 Awards</div>
+    </div>
+    <div class="section">
+      <div class="section-head"><h3>Upcoming</h3></div>
+      ${eventCardHtml(findEvent('millennium'))}
+    </div>
+  `;
+}
+
+function screenEvent(){
+  const c = state.context;
+  const catLabel = (categories.find(cat=>cat.key===c.type) || {}).label || 'Event';
+  const artistImgId = c.artist ? artistImages[c.artist] : null;
+  return `
+    <div class="event-hero" style="background-image:url('${pexels(c.img,900)}')"><div class="fill"></div><div class="content"><div class="type-tag">${catLabel}</div><h2>${c.title}</h2></div></div>
+    <div style="position:absolute;top:34px;left:18px;"><button class="back-btn" onclick="pop()">←</button></div>
+    <div class="detail-row">
+      <div><span>Date</span>${c.date}</div>
+      <div><span>Venue</span>${c.venue}</div>
+    </div>
+    ${c.artist ? `
+      <div class="host-row">
+        <div class="host-avatar" style="${artistImgId ? `background-image:url('${pexels(artistImgId,120)}');background-size:cover;background-position:center;color:transparent;` : ''}">${c.artist.charAt(0)}</div>
+        <div><div class="host-name">${c.artist}</div><div class="host-role">Performing artist</div></div>
+        <button class="arrow-link" onclick="push('artist')">View →</button>
+      </div>
+    ` : ''}
+    <div class="section"><div class="section-head"><h3>About this event</h3></div></div>
+    <div class="about-text">${c.about || 'Details for this event will be added soon.'}</div>
+    <div class="section"><div class="section-head"><h3>Choose ticket</h3></div></div>
+    ${tiers.map((tier,i)=>`
+      <button class="tier-card ${tier.vip?'vip':''} ${state.selectedTier===i?'selected':''}" onclick="state.selectedTier=${i};render()">
+        <div class="tier-radio"></div>
+        <div><div class="tier-name">${tier.name}${tier.badge?`<span class="vip-badge">${tier.badge}</span>`:''}</div><div class="tier-sub">${tier.sub}</div></div>
+        <div class="tier-price">${tier.custom ? 'Custom' : tier.price + ' ETB'}</div>
+      </button>
+    `).join('')}
+    ${state.selectedTier===3 ? `
+      <div style="margin:10px 18px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;">
+        <div style="font-size:12.5px;font-weight:600;margin-bottom:4px;">How many guests?</div>
+        <div class="custom-input-row">
+          <input type="number" min="9" class="custom-input" value="${state.customQty}" onchange="state.customQty=Math.max(9,parseInt(this.value)||9);render()">
+          <span style="font-size:12px;color:var(--cream-dim);">guests at Standard pricing (${tiers[0].price} ETB each)</span>
+        </div>
+        <div class="custom-note">Group bookings of 9 or more are confirmed by our events team before payment. You will not be charged until your quote is approved.</div>
+      </div>
+    ` : `
+      <div class="qty-row">
+        <span>Quantity</span>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="state.qty=Math.max(1,state.qty-1);render()">–</button>
+          <span class="qty-num">${state.qty}</span>
+          <button class="qty-btn" onclick="state.qty=Math.min(8,state.qty+1);render()">+</button>
+        </div>
+      </div>
+    `}
+    <div style="height:80px"></div>
+  `;
+}
+
+function screenExperience(){
+  const c = state.context;
+  const remaining = c.seatsTotal - c.seatsReserved;
+  const pct = Math.round((c.seatsReserved / c.seatsTotal) * 100);
+  return `
+    <div class="event-hero" style="background-image:url('${pexels(c.img,900)}')"><div class="fill"></div><div class="content"><div class="type-tag">Exclusive</div><h2>${c.title}</h2></div></div>
+    <div style="position:absolute;top:34px;left:18px;"><button class="back-btn" onclick="pop()">←</button></div>
+    <div class="host-row">
+      <div class="host-avatar" style="background-image:url('${pexels(18799034,120)}');background-size:cover;background-position:center;color:transparent;"></div>
+      <div><div class="host-name">${c.host}</div><div class="host-role">Verified organizer</div></div>
+    </div>
+    <div class="detail-row">
+      <div><span>Date</span>${c.date}</div>
+      <div><span>Venue</span>${c.venue}</div>
+    </div>
+    <div class="section"><div class="section-head"><h3>Experience includes</h3></div></div>
+    <div class="include-list">
+      ${c.includes.map(i=>`<div class="include-item"><span class="include-check">✓</span>${i}</div>`).join('')}
+    </div>
+    <div class="scarcity-bar-wrap">
+      <div class="scarcity-label"><span>${remaining} seats left</span><span>${c.seatsReserved}/${c.seatsTotal} reserved</span></div>
+      <div class="scarcity-bar"><div class="scarcity-fill" style="width:${pct}%;"></div></div>
+    </div>
+    <div class="qty-row">
+      <span>Seats</span>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="state.qty=Math.max(1,state.qty-1);render()">–</button>
+        <span class="qty-num">${state.qty}</span>
+        <button class="qty-btn" onclick="state.qty=Math.min(${remaining},state.qty+1);render()">+</button>
+      </div>
+    </div>
+    <div style="height:80px"></div>
+  `;
+}
+
+function screenCheckout(){
+  const c = state.context;
+  const isExperience = c.kind==='experience';
+  const tier = tiers[state.selectedTier];
+  const lineLabel = isExperience
+    ? `${c.title} × ${state.qty}`
+    : (tier.custom ? `Custom group · ${state.customQty} guests` : `${tier.name}${tier.badge?' '+tier.badge:''} × ${state.qty}`);
+  const subtotal = totalPrice();
+  const fee = 25;
+  return `
+    ${topbar({title:'Checkout', back:true})}
+    <div class="section"><div class="section-head"><h3>Order summary</h3></div></div>
+    <div class="summary-row"><span>${lineLabel}</span><span>${subtotal} ETB</span></div>
+    <div class="summary-row"><span>Service fee</span><span>${fee} ETB</span></div>
+    <div class="summary-row total"><span>Total</span><span>${subtotal+fee} ETB</span></div>
+
+    <div class="section"><div class="section-head"><h3>Recipient</h3></div></div>
+    <div class="recipient-card">
+      <div class="recipient-top">
+        <div>
+          <div class="rt-title">Buying for someone else?</div>
+          <div class="rt-sub">Send this ticket to a different phone number</div>
+        </div>
+        <button class="switch ${state.buyForOther?'on':''}" onclick="state.buyForOther=!state.buyForOther;render()"><span class="knob"></span></button>
+      </div>
+      ${state.buyForOther ? `
+        <div class="recipient-phone-field">
+          <label>Recipient's phone number</label>
+          <input type="tel" placeholder="09xx xxx xxx" value="${state.otherPhone}" oninput="state.otherPhone=this.value">
+        </div>
+        <div class="recipient-hint">The ticket and QR code will be sent to this number by SMS instead of your own.</div>
+      ` : ''}
+    </div>
+
+    <div class="section"><div class="section-head"><h3>Pay with</h3></div></div>
+    <button class="pay-card selected">
+      <div class="pay-logo">TB</div>
+      <div><div style="font-weight:700;font-size:14px;">Telebirr</div><div style="font-size:11.5px;color:var(--cream-dim);">Confirm on your phone</div></div>
+    </button>
+    <div style="height:70px"></div>
+  `;
+}
+
+function screenPaying(){
+  return `
+    ${topbar({title:'Checkout', back:true})}
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:70%;gap:16px;">
+      <div style="width:56px;height:56px;border-radius:50%;border:3px solid var(--surface-2);border-top-color:var(--gold);animation:spin 0.9s linear infinite;"></div>
+      <div style="color:var(--cream-dim);font-size:13px;">Confirming payment on Telebirr…</div>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  `;
+}
+
+function screenCustomRequest(){
+  const c = state.context;
+  return `
+    ${topbar({title:'Request Sent', back:true})}
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 24px;gap:14px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gold);">✓</div>
+      <h3 style="font-size:18px;">Request received</h3>
+      <div style="font-size:13px;color:var(--cream-dim);line-height:1.6;">Our events team will confirm pricing for ${state.customQty} guests at ${c ? c.title : 'this event'} and send a secure payment link within 24 hours.</div>
+      <button class="cta-btn dark" style="position:static;margin-top:10px;" onclick="goTab('discover')">Back to Discover</button>
+    </div>
+  `;
+}
+
+function screenTicket(){
+  const c = state.context;
+  const isExperience = c.kind==='experience';
+  const tier = tiers[state.selectedTier];
+  const tierLabel = isExperience
+    ? `Private Experience · ${state.qty} seat${state.qty>1?'s':''}`
+    : `${tier.name}${tier.badge?' '+tier.badge:''} · Seat A12`;
+  const holderLabel = state.buyForOther && state.otherPhone ? state.otherPhone : 'A. Bekele';
+  return `
+    ${topbar({title:'Your ticket', back:true})}
+    <div class="ticket-wrap">
+      <div class="stub">
+        <div class="stub-top">
+          <div class="ev">${c.title}</div>
+          <div class="sub">${c.venue} · ${c.date}</div>
+          <div class="vip-flag">${tierLabel}</div>
+        </div>
+        <div class="perf"></div>
+        <div class="stub-bottom">
+          <div class="qr"></div>
+          <div class="stub-meta">
+            <div class="row">Ticket ID <b>LEL-88213</b></div>
+            <div class="row">Holder <b>${holderLabel}</b></div>
+            <div class="row">Status <b>Valid</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 18px;">
+      <button class="cta-btn dark" style="position:static;" onclick="goTab('tickets')">View all my tickets</button>
+    </div>
+  `;
+}
+
+function screenTickets(){
+  return `
+    ${topbar({title:'My Tickets'})}
+    <div class="section"><div class="section-head"><h3>Upcoming</h3></div></div>
+    <button class="mini-stub" onclick="push('ticket')"><div class="side"></div><div class="mini-stub-body"><h4>Millennium Nights</h4><div class="sub">Aug 2 · Standard</div></div><div class="status-pill">Valid</div></button>
+    <button class="mini-stub" onclick="push('ticket')"><div class="side"></div><div class="mini-stub-body"><h4>Film Premiere: Yeqererta</h4><div class="sub">Aug 20 · VIP 2×</div></div><div class="status-pill">Valid</div></button>
+    <div class="section"><div class="section-head"><h3>Past</h3></div></div>
+    <button class="mini-stub past" onclick="push('ticket')"><div class="side"></div><div class="mini-stub-body"><h4>Timket Fest</h4><div class="sub">Jan 19 · Standard</div></div><div class="status-pill">Used</div></button>
+  `;
+}
+
+function screenProfile(){
+  return `
+    ${topbar({title:'Profile'})}
+    <div class="profile-head" style="margin-top:6px;">
+      <div class="profile-avatar">A</div>
+      <div><h2 style="font-size:19px;">Abel Bekele</h2><div class="role">abel@example.com</div></div>
+    </div>
+    <div class="section"><div class="section-head"><h3>Account</h3></div></div>
+    <button class="menu-item" onclick="goTab('tickets')">🎟 My Tickets <span class="arrow">→</span></button>
+    <button class="menu-item" onclick="toast('Payment methods coming soon')">💳 Payment Methods <span class="arrow">→</span></button>
+    <button class="menu-item" onclick="toast('Notification settings coming soon')">🔔 Notifications <span class="arrow">→</span></button>
+    <button class="menu-item danger" onclick="toast('Signed out (demo)')">⎋ Log Out <span class="arrow">→</span></button>
+  `;
+}
+
+const screenMap = {
+  discover: screenDiscover, events: screenEvents, artist: screenArtist,
+  event: screenEvent, experience: screenExperience, checkout: screenCheckout,
+  paying: screenPaying, customRequest: screenCustomRequest,
+  ticket: screenTicket, tickets: screenTickets, profile: screenProfile,
+};
+
+const tabIcons = [
+  {key:'discover', icon:'⌂', label:'Discover'},
+  {key:'events', icon:'🗓', label:'Events'},
+  {key:'tickets', icon:'🎟', label:'Tickets'},
+  {key:'profile', icon:'☺', label:'Profile'},
+];
+
+function renderTabbar(){
+  const tabbar = document.getElementById('tabbar');
+  tabbar.innerHTML = tabIcons.map(t=>`
+    <button class="tab ${state.tab===t.key?'on':''}" onclick="goTab('${t.key}')">
+      <span style="font-size:15px;">${t.icon}</span>${t.label}
+    </button>
+  `).join('');
+}
+
+function render(){
+  const key = current();
+  document.getElementById('screens').innerHTML = `<div class="screen">${screenMap[key]()}</div>`;
+  renderTabbar();
+
+  if(key === 'discover'){ startHeroCarousel(); } else { stopHeroCarousel(); }
+
+  const showCta = ['event','checkout','experience'].includes(key);
+  if(showCta){
+    let ctaHtml = '';
+    if(key==='event'){
+      ctaHtml = state.selectedTier===3
+        ? `<button class="cta-btn" onclick="submitCustomRequest()"><span>Request Custom Quote</span><span>→</span></button>`
+        : `<button class="cta-btn" onclick="push('checkout')"><span>Continue · ${totalPrice()} ETB</span><span>→</span></button>`;
+    } else if(key==='experience'){
+      ctaHtml = `<button class="cta-btn" onclick="push('checkout')"><span>Reserve · ${totalPrice()} ETB</span><span>→</span></button>`;
+    } else if(key==='checkout'){
+      const disableCheck = state.buyForOther && !state.otherPhone.trim();
+      ctaHtml = `<button class="cta-btn" ${disableCheck?'disabled':''} onclick="${disableCheck?"toast('Enter the recipient\\'s phone number')":'payNow()'}"><span>Pay ${totalPrice()+25} ETB</span><span>→</span></button>`;
+    }
+    const div = document.createElement('div');
+    div.className = 'bottom-cta';
+    div.innerHTML = ctaHtml;
+    document.getElementById('screens').firstElementChild.appendChild(div);
+  }
+}
+
+function payNow(){
+  push('paying');
+  setTimeout(()=>{
+    state.stack.pop();
+    state.stack.pop();
+    push('ticket');
+    toast(state.buyForOther ? 'Payment confirmed · ticket sent to recipient' : 'Payment confirmed');
+  }, 1400);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const sw = document.getElementById('switcher-btns');
+  const order = [['discover','Discover'],['artist','Artist'],['event','Event'],['experience','Experience'],['checkout','Checkout'],['ticket','Ticket'],['tickets','My Tickets'],['profile','Profile'],['events','Events']];
+  order.forEach(([key,label])=>{
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = ()=>{
+      if(key==='experience'){ openExperience(experienceData); return; }
+      if(['event','checkout','ticket','customRequest'].includes(key) && (!state.context || state.context.kind!=='concert')){
+        state.context = defaultConcertContext();
+      }
+      state.stack=[key];
+      render();
+    };
+    sw.appendChild(b);
+  });
+  render();
+});
+</script>
+</body>
+</html>
