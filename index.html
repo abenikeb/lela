@@ -9,8 +9,12 @@
 		<title>Lela</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Poppins:wght@500;600;700;800&display=swap"
 			rel="stylesheet" />
+		<!-- <link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+			rel="stylesheet" /> -->
 		<style>
 			:root {
 				--ink: #170b0f;
@@ -246,6 +250,9 @@
 			}
 			.section-head h3 {
 				font-size: 16px;
+				font-family: "Poppins", "Work Sans", sans-serif;
+				font-weight: 700;
+				text-transform: capitalize;
 			}
 			.see-all {
 				font-size: 11.5px;
@@ -1327,15 +1334,19 @@
 				padding: 6px 18px 0;
 			}
 			.discover-greeting .hello {
-				font-family: "Space Mono";
+				font-family: "Poppins", "Work Sans", sans-serif;
 				font-size: 11.5px;
 				letter-spacing: 0.08em;
 				text-transform: uppercase;
 				color: var(--gold);
 			}
 			.discover-greeting h1 {
+				font-family: "Poppins", "Work Sans", sans-serif;
+				font-weight: 700;
+				text-transform: none;
+				letter-spacing: -0.01em;
 				font-size: 26px;
-				line-height: 1.05;
+				line-height: 1.18;
 				margin-top: 6px;
 				max-width: 280px;
 			}
@@ -1932,20 +1943,21 @@
     ${topbar({
 			right: `
       <div style="display:flex;align-items:center;gap:10px;">
-        <button class="avatar-btn" style="background-image:url('${pexels(userAvatarImg, 80)}')" onclick="goTab('profile')"></button>
         <button class="icon-btn" onclick="toast('No new notifications')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-        </button>
+			  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+				  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+				  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+				</svg>
+			</button>
+			<button class="avatar-btn" style="background-image:url('${pexels(artistImages["Hamelmal"], 80)}')" onclick="goTab('profile')"></button>
+     
       </div>
     `,
 		})}
 
     <div class="discover-greeting">
       <div class="hello">Hello, Abel</div>
-      <h1>Find your next<br>night out</h1>
+      <h1>Discover Amazing Events</h1>
     </div>
 
     <button class="discover-search" onclick="goTab('events')" style="width:calc(100% - 36px);">
